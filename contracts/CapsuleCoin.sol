@@ -57,6 +57,13 @@ contract CapsuleCoin is ERC20 {
 
     /*
      * @description Verify a proof for a claim and execute it if it is valid.
+     * @param proof The result of `hashForClaim` signed by `from` to authorized
+     * the transfer.
+     * @param from The account we will claim funds from.
+     * @param to The account that will receive the funds.
+     * @param amount The amount of coins we will transfer.
+     * @param validity The block number after which we can use the proof.
+     * @param salt A unique value to avoid replay attacks.
      */
     function claimOffchainGrant(
         bytes memory proof,
