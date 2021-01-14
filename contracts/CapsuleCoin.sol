@@ -52,9 +52,7 @@ contract CapsuleCoin is ERC20 {
         uint256 validity,
         uint256 salt
     ) public pure returns (bytes32) {
-        return
-            keccak256(abi.encodePacked(from, to, amount, validity, salt))
-                .toEthSignedMessageHash();
+        return keccak256(abi.encodePacked(from, to, amount, validity, salt));
     }
 
     /*
@@ -68,6 +66,17 @@ contract CapsuleCoin is ERC20 {
         uint256 validity,
         uint256 salt
     ) public {
+        require(validity <= block.number, "Ternoa: too early");
+        require(!saltUsed[from][salt], "Ternoa: salt already used");
+
+        bytes32 hashThatShouldBeSigned =
+            hashForClaim(from, to, amount, validity, salt)
+                .toEthSignedMessageHash();
+        require(
+            hashThatShouldBeSigned.recover(proof) == from,
+            "Ternoa: bad proof"
+        );
+
         _transfer(from, to, amount);
         saltUsed[from][salt] = true;
     }
