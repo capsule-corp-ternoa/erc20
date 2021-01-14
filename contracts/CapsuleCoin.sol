@@ -84,7 +84,7 @@ contract CapsuleCoin is ERC20 {
             "Ternoa: bad proof"
         );
 
-        _transfer(from, to, amount);
         saltUsed[from][salt] = true;
+        _transfer(from, to, amount);
     }
 }
