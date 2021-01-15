@@ -3,6 +3,8 @@ Welcome to the repo for the Ternoa ERC20 token. This token is designed to be dep
 1. Full `ERC20` compliance thanks to the OpenZeppelin reference.
 2. Secure way to sign "offchain claims" that other accounst can use to get some tokens out of another one. Think of it as an offchain `approve` + `transferFrom`. This could be used for issuing the coins of presale contributors for example :smile:.
 
+> An account will need to have enough coins for its offchain approval to work. Meaning that it is recommended to create a specific "presale" account with exactly the right number of coins to be claimed in order to keep things clean and transparent.
+
 ## Development
 We use `hardhat` to manage and test the token along with `ethers.js`.
 
