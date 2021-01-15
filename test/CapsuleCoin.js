@@ -81,6 +81,18 @@ describe("Capsule Coin contract", () => {
                 expect.fail("Expected an error that did not occur");
             }
 
+            it("Fails if not enough coins in balance", async () => {
+                const totalSupply = await token.totalSupply();
+                await token.connect(owner).transfer(user.address, totalSupply); // Zero balance
+
+                await expectError(
+                    token
+                        .connect(user)
+                        .claimOffchainGrant(claim, owner.address, user.address, targetAmount, ethers.provider.blockNumber, salt),
+                    "ERC20: transfer amount exceeds balance"
+                );
+            })
+
             it("Refuse already used salt", async () => {
                 await token
                     .connect(user)
