@@ -14,3 +14,10 @@ Use `npx hardhat compile`, it will generate fill the `artificates` directory for
 
 ### Unit tests
 Use `npx hardhat test` to run our unit testing suite.
+
+### Deploying to a local network
+Open a terminal and run `npx hardhat node` there, keep it running.
+
+You can now deploy the token by using a command of the type `npx hardhat deploy --vault 0x2546bcd3c84621e976d8185a91a922ae77ecec30`. You can change the `--vault` argument to whatever address you'd like to receive the total supply of coins.
+
+> Because we use the deployment task with a local hardhat network it already knows which private keys to use to sign the transactions. However, when deploying on a production network you may have to fine tune the configuration.
