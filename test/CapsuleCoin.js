@@ -27,37 +27,37 @@ describe("Capsule Coin contract", () => {
 
     context("Offchain Claim", () => {
         const targetAmount = 10000;
-        const salt = 1;
+        const nonce = 1;
         let claim;
 
-        let createClaim = async (destination, amount, forBlock, salt) => {
-            let hash = await token.hashForClaim(owner.address, destination, amount, forBlock, salt);
+        let createClaim = async (destination, amount, forBlock, nonce) => {
+            let hash = await token.hashForClaim(owner.address, destination, amount, forBlock, nonce);
             let signed = owner.signMessage(ethers.utils.arrayify(hash));
 
             return signed;
         }
 
         before(async () => {
-            claim = await createClaim(user.address, targetAmount, ethers.provider.blockNumber, salt);
+            claim = await createClaim(user.address, targetAmount, ethers.provider.blockNumber, nonce);
         })
 
         context("Valid", () => {
             it("Transfer the coins", async () => {
                 await token
                     .connect(user)
-                    .claimOffchainGrant(claim, owner.address, user.address, targetAmount, ethers.provider.blockNumber, salt);
+                    .claimOffchainGrant(claim, owner.address, user.address, targetAmount, ethers.provider.blockNumber, nonce);
 
                 const totalSupply = await token.totalSupply();
                 expect(await token.balanceOf(owner.address)).to.equal(totalSupply - targetAmount);
                 expect(await token.balanceOf(user.address)).to.equal(targetAmount);
             })
 
-            it("Marks the salt as used", async () => {
+            it("Marks the nonce as used", async () => {
                 await token
                     .connect(user)
-                    .claimOffchainGrant(claim, owner.address, user.address, targetAmount, ethers.provider.blockNumber, salt);
+                    .claimOffchainGrant(claim, owner.address, user.address, targetAmount, ethers.provider.blockNumber, nonce);
 
-                expect(await token.saltUsed(owner.address, salt)).to.equal(true);
+                expect(await token.nonceUsed(owner.address, nonce)).to.equal(true);
             })
         })
 
@@ -88,43 +88,43 @@ describe("Capsule Coin contract", () => {
                 await expectError(
                     token
                         .connect(user)
-                        .claimOffchainGrant(claim, owner.address, user.address, targetAmount, ethers.provider.blockNumber, salt),
+                        .claimOffchainGrant(claim, owner.address, user.address, targetAmount, ethers.provider.blockNumber, nonce),
                     "ERC20: transfer amount exceeds balance"
                 );
             })
 
-            it("Refuse already used salt", async () => {
+            it("Refuse already used nonce", async () => {
                 await token
                     .connect(user)
-                    .claimOffchainGrant(claim, owner.address, user.address, targetAmount, ethers.provider.blockNumber, salt);
+                    .claimOffchainGrant(claim, owner.address, user.address, targetAmount, ethers.provider.blockNumber, nonce);
 
                 await expectError(
                     token
                         .connect(user)
-                        .claimOffchainGrant(claim, owner.address, user.address, targetAmount, ethers.provider.blockNumber, salt),
-                    "Ternoa: salt already used"
+                        .claimOffchainGrant(claim, owner.address, user.address, targetAmount, ethers.provider.blockNumber, nonce),
+                    "Ternoa: nonce already used"
                 );
             })
 
             it("Refuse if submitted too early", async () => {
-                const earlyClaim = await createClaim(user.address, targetAmount, ethers.provider.blockNumber + 1000, salt);
+                const earlyClaim = await createClaim(user.address, targetAmount, ethers.provider.blockNumber + 1000, nonce);
 
                 await expectError(
                     token
                         .connect(user)
-                        .claimOffchainGrant(earlyClaim, owner.address, user.address, targetAmount, ethers.provider.blockNumber + 1000, salt),
+                        .claimOffchainGrant(earlyClaim, owner.address, user.address, targetAmount, ethers.provider.blockNumber + 1000, nonce),
                     "Ternoa: too early"
                 );
             })
 
             it("Refuse corrupted proof or signature", async () => {
                 // We sign something very differemt, signature verification should fail
-                const corruptedSignature = await createClaim(user.address, 1, 1, salt);
+                const corruptedSignature = await createClaim(user.address, 1, 1, nonce);
 
                 await expectError(
                     token
                         .connect(user)
-                        .claimOffchainGrant(corruptedSignature, owner.address, user.address, targetAmount, ethers.provider.blockNumber, salt),
+                        .claimOffchainGrant(corruptedSignature, owner.address, user.address, targetAmount, ethers.provider.blockNumber, nonce),
                     "Ternoa: bad proof"
                 );
             })
@@ -134,7 +134,7 @@ describe("Capsule Coin contract", () => {
                     // We replaced owner.address with user.address
                     token
                         .connect(user)
-                        .claimOffchainGrant(claim, user.address, user.address, targetAmount, ethers.provider.blockNumber, salt),
+                        .claimOffchainGrant(claim, user.address, user.address, targetAmount, ethers.provider.blockNumber, nonce),
                     "Ternoa: bad proof"
                 );
             })
@@ -144,7 +144,7 @@ describe("Capsule Coin contract", () => {
                     // We replaced user.address with owner.address
                     token
                         .connect(user)
-                        .claimOffchainGrant(claim, owner.address, owner.address, targetAmount, ethers.provider.blockNumber, salt),
+                        .claimOffchainGrant(claim, owner.address, owner.address, targetAmount, ethers.provider.blockNumber, nonce),
                     "Ternoa: bad proof"
                 );
             })
@@ -154,7 +154,7 @@ describe("Capsule Coin contract", () => {
                     // Target Amount is incremented
                     token
                         .connect(user)
-                        .claimOffchainGrant(claim, owner.address, user.address, targetAmount + 1, ethers.provider.blockNumber, salt),
+                        .claimOffchainGrant(claim, owner.address, user.address, targetAmount + 1, ethers.provider.blockNumber, nonce),
                     "Ternoa: bad proof"
                 );
             })
@@ -164,17 +164,17 @@ describe("Capsule Coin contract", () => {
                     // We are decremented the block to try to claim earlier
                     token
                         .connect(user)
-                        .claimOffchainGrant(claim, owner.address, user.address, targetAmount, ethers.provider.blockNumber - 1, salt),
+                        .claimOffchainGrant(claim, owner.address, user.address, targetAmount, ethers.provider.blockNumber - 1, nonce),
                     "Ternoa: bad proof"
                 );
             })
 
-            it("Refuse bad salt", async () => {
+            it("Refuse bad nonce", async () => {
                 await expectError(
-                    // Salt is modified tp try to double claim
+                    // nonce is modified tp try to double claim
                     token
                         .connect(user)
-                        .claimOffchainGrant(claim, owner.address, user.address, targetAmount, ethers.provider.blockNumber, salt + 1),
+                        .claimOffchainGrant(claim, owner.address, user.address, targetAmount, ethers.provider.blockNumber, nonce + 1),
                     "Ternoa: bad proof"
                 );
             })

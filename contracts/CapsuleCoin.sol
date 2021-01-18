@@ -23,13 +23,13 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
  * - the amount of coins involved.
  * - a block after which it can be executed, if the proof is submitted too early it should
  *   be rejected.
- * - a salt used to avoid replay attacks, if the salt was already seen for the same source
+ * - a nonce used to avoid replay attacks, if the nonce was already seen for the same source
  *   account the proof should be discarded.
  */
 contract CapsuleCoin is ERC20 {
     using ECDSA for bytes32;
 
-    mapping(address => mapping(uint256 => bool)) public saltUsed;
+    mapping(address => mapping(uint256 => bool)) public nonceUsed;
 
     constructor(address vault) public ERC20("CapsuleCoin", "CACO") {
         // We create 2.5B coins but the token has 18 decimals.
@@ -42,7 +42,7 @@ contract CapsuleCoin is ERC20 {
      * @param to The account that will receive the funds.
      * @param amount The amount of coins we will transfer.
      * @param validity The block number after which we can use the proof.
-     * @param salt A unique value to avoid replay attacks.
+     * @param nonce A unique value to avoid replay attacks.
      * @return The hash that needs to be signed by the from account.
      */
     function hashForClaim(
@@ -50,9 +50,9 @@ contract CapsuleCoin is ERC20 {
         address to,
         uint256 amount,
         uint256 validity,
-        uint256 salt
+        uint256 nonce
     ) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(from, to, amount, validity, salt));
+        return keccak256(abi.encodePacked(from, to, amount, validity, nonce));
     }
 
     /*
@@ -63,7 +63,7 @@ contract CapsuleCoin is ERC20 {
      * @param to The account that will receive the funds.
      * @param amount The amount of coins we will transfer.
      * @param validity The block number after which we can use the proof.
-     * @param salt A unique value to avoid replay attacks.
+     * @param nonce A unique value to avoid replay attacks.
      */
     function claimOffchainGrant(
         bytes memory proof,
@@ -71,20 +71,20 @@ contract CapsuleCoin is ERC20 {
         address to,
         uint256 amount,
         uint256 validity,
-        uint256 salt
+        uint256 nonce
     ) public {
         require(validity <= block.number, "Ternoa: too early");
-        require(!saltUsed[from][salt], "Ternoa: salt already used");
+        require(!nonceUsed[from][nonce], "Ternoa: nonce already used");
 
         bytes32 hashThatShouldBeSigned =
-            hashForClaim(from, to, amount, validity, salt)
+            hashForClaim(from, to, amount, validity, nonce)
                 .toEthSignedMessageHash();
         require(
             hashThatShouldBeSigned.recover(proof) == from,
             "Ternoa: bad proof"
         );
 
-        saltUsed[from][salt] = true;
+        nonceUsed[from][nonce] = true;
         _transfer(from, to, amount);
     }
 }
