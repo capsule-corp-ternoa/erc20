@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.7.0;
+pragma solidity 0.7.6;
 
 import "@openzeppelin/contracts/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -31,7 +31,7 @@ contract CapsuleCoin is ERC20 {
 
     mapping(address => mapping(uint256 => bool)) public nonceUsed;
 
-    constructor(address vault) public ERC20("CapsuleCoin", "CACO") {
+    constructor(address vault) ERC20("CapsuleCoin", "CACO") {
         // We create 2.5B coins but the token has 18 decimals.
         _mint(vault, 2500000000 * (10**18));
     }
