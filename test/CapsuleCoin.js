@@ -1,4 +1,5 @@
 const { expect } = require("chai");
+const { BigNumber } = require("ethers");
 
 describe("Capsule Coin contract", () => {
     let owner;
@@ -19,9 +20,11 @@ describe("Capsule Coin contract", () => {
         });
 
         it("Has a total supply of 25B tokens", async () => {
-            const oneBillion = 1000000000;
+            const expected = BigNumber.from("2500000000");
             const decimals = await token.decimals();
-            expect(await token.totalSupply()).to.equal(2.5 * oneBillion * (10 ^ decimals));
+            const ten = BigNumber.from(10);
+
+            expect(await token.totalSupply()).to.equal(expected.mul(ten.pow(decimals)));
         })
     })
 
@@ -48,7 +51,7 @@ describe("Capsule Coin contract", () => {
                     .claimOffchainGrant(claim, owner.address, user.address, targetAmount, ethers.provider.blockNumber, nonce);
 
                 const totalSupply = await token.totalSupply();
-                expect(await token.balanceOf(owner.address)).to.equal(totalSupply - targetAmount);
+                expect(await token.balanceOf(owner.address)).to.equal(totalSupply.sub(targetAmount));
                 expect(await token.balanceOf(user.address)).to.equal(targetAmount);
             })
 
