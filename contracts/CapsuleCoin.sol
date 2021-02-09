@@ -52,7 +52,7 @@ contract CapsuleCoin is ERC20 {
         uint256 validity,
         uint256 nonce
     ) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(from, to, amount, validity, nonce));
+        return keccak256(abi.encode(from, to, amount, validity, nonce));
     }
 
     /*
