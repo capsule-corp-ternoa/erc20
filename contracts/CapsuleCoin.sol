@@ -66,7 +66,7 @@ contract CapsuleCoin is ERC20 {
      * @param nonce A unique value to avoid replay attacks.
      */
     function claimOffchainGrant(
-        bytes memory proof,
+        bytes calldata proof,
         address from,
         address to,
         uint256 amount,
