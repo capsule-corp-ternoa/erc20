@@ -72,7 +72,7 @@ contract CapsuleCoin is ERC20 {
         uint256 amount,
         uint256 validity,
         uint256 nonce
-    ) public {
+    ) external {
         require(validity <= block.number, "Ternoa: too early");
         require(!nonceUsed[from][nonce], "Ternoa: nonce already used");
 
