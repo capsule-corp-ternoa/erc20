@@ -1,3 +1,5 @@
+// View https://hardhat.org/config/ for help adding more options.
+
 require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-waffle");
 
