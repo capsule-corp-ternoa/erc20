@@ -23,3 +23,18 @@ Open a terminal and run `npx hardhat node` there, keep it running.
 You can now deploy the token by using a command of the type `npx hardhat deploy --vault 0x2546bcd3c84621e976d8185a91a922ae77ecec30`. You can change the `--vault` argument to whatever address you'd like to receive the total supply of coins.
 
 > Because we use the deployment task with a local hardhat network it already knows which private keys to use to sign the transactions. However, when deploying on a production network you may have to fine tune the configuration.
+
+### Deploying to a live network
+Please define two environment variables as follows:
+- `NETWORK_URL` should be the url of the node to use to connect to the live network
+- `MNEMONIC` should contains the mnemonic words of the account to use for deployment, make sure it has enough funds
+
+You can then run:
+```
+npx hardhat --network custom deploy --vault <address that should receive the initial coins>
+```
+
+#### Verifying on Etherscan
+We also have a plugin in place for etherscan verification, to do so you need to (assuming you kept the environment variables defined):
+1. Edit `./hardhat.config.js` and replace `YOUR_ETHERSCAN_API_KEY` with an Etherscan API key (you should be able to generate one on [their website](https://etherscan.io))
+2. Simply run `npx hardhat verify --network custom DEPLOYED_CONTRACT_ADDRESS "ADDRESS FOR --vault WHEN DEPLOYING"`
