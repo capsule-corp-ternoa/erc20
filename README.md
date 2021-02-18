@@ -38,3 +38,29 @@ npx hardhat --network custom deploy --vault <address that should receive the ini
 We also have a plugin in place for etherscan verification, to do so you need to (assuming you kept the environment variables defined):
 1. Edit `./hardhat.config.js` and replace `YOUR_ETHERSCAN_API_KEY` with an Etherscan API key (you should be able to generate one on [their website](https://etherscan.io))
 2. Simply run `npx hardhat verify --network custom DEPLOYED_CONTRACT_ADDRESS "ADDRESS FOR --vault WHEN DEPLOYING"`
+
+#### Bonus: generating claims locally
+Assuming that the environment variables are still deployed:
+1. Use `npx hardhat accounts` to list the account available, copy paste one of the addresses you want to use to generate claims (it also needs to have the coins in balance)
+2. Wire now or later the correct amount of tokens to the address you selected
+3. Generate the claims via `npx hardhat --network custom claims --token DEPLOYED_CONTRACT_ADDR --nonce 0 --json PATH_TO_JSON_CLAIM_FILE --addr ADDR_ISSUING_GRANTS`
+
+We assume that the file at `PATH_TO_JSON_CLAIM_FILE` is formatted as follows:
+```json
+{
+    "addr account 1": {
+        "vesting": {
+            "unix epoch time 1": 25500,
+            "unix epoch time 2": 42500
+        }
+    },
+    "addr account 2": {
+        "vesting": {
+            "unix epoch time 1": 25500,
+            "unix epoch time 2": 50500
+        }
+    }
+}
+```
+
+This shall output in the console (you can pipe it to a file) a JSON file with the generated claims.
