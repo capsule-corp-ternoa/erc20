@@ -62,14 +62,31 @@ task("claims", "Create offchain claims for some tokens as defined in a JSON file
       const entry = claims[addr];
       generatedClaims[addr] = [];
 
-      for (const epoch in entry.vesting) {
+      const vestings = [
+        {
+          epoch: entry.vesting1Epoch,
+          tokens: entry.vesting1price,
+        },
+        {
+          epoch: entry.vesting2Epoch,
+          tokens: entry.vesting2price,
+        },
+        {
+          epoch: entry.vesting3Epoch,
+          tokens: entry.vesting3price,
+        }
+      ];
+
+      for (const id in vestings) {
+        const vesting = vestings[id];
+
         const blockTimeInSeconds = 30; // on average...
-        const at = parseInt(epoch, 10);
+        const at = parseInt(vesting.epoch, 10);
         const inHowManySeconds = at - currentBlock.timestamp;
         const inHowManyBlocks = Math.floor(inHowManySeconds / blockTimeInSeconds);
         const atBlock = inHowManyBlocks + currentBlock.number;
 
-        const amount = ethers.BigNumber.from(entry.vesting[epoch]);
+        const amount = ethers.BigNumber.from(vesting.tokens);
         const ten = ethers.BigNumber.from("10");
         const convertedAmount = amount.mul(ten.pow(decimals));
 
