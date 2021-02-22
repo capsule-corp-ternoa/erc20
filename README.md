@@ -48,17 +48,13 @@ Assuming that the environment variables are still deployed:
 We assume that the file at `PATH_TO_JSON_CLAIM_FILE` is formatted as follows:
 ```json
 {
-    "addr account 1": {
-        "vesting": {
-            "unix epoch time 1": 25500,
-            "unix epoch time 2": 42500
-        }
-    },
-    "addr account 2": {
-        "vesting": {
-            "unix epoch time 1": 25500,
-            "unix epoch time 2": 50500
-        }
+    "addr 1": {
+        "vesting1price": 50000,
+        "vesting1Epoch": 1639958400,
+        "vesting2price": 37500,
+        "vesting2Epoch": 1655683200,
+        "vesting3price": 37500,
+        "vesting3Epoch": 1671494400
     }
 }
 ```
