@@ -31,7 +31,7 @@ contract CapsuleCoin is ERC20 {
 
     mapping(address => mapping(uint256 => bool)) public nonceUsed;
 
-    constructor(address vault) ERC20("CapsuleCoin", "CACO") {
+    constructor(address vault) ERC20("Capsule Coin", "CAPS") {
         // We create 2.5B coins but the token has 18 decimals.
         _mint(vault, 2500000000 * (10**18));
     }
