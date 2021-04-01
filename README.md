@@ -60,3 +60,29 @@ We assume that the file at `PATH_TO_JSON_CLAIM_FILE` is formatted as follows:
 ```
 
 This shall output in the console (you can pipe it to a file) a JSON file with the generated claims.
+
+#### Bonus: example of claiming flow
+1. In a dedicated terminal start a local node via `npx hardhat node`
+2. Open a new terminal to run the other commands
+3. Run `npx hardhat accounts` take two addresses from there to be your vault and grantee. In our case we did as follow
+   ```sh
+   export VAULT=0x70997970c51812dc3a010c7d01b50e0d17dc79c8
+   export GRANTEE=0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+   ```
+4. Deploy the token via `npx hardhat --network custom deploy --vault $VAULT`, and note its address, we did:
+   ```sh
+   export TOKEN=0x5FbDB2315678afecb367f032d93F642f64180aa3
+   ```
+5. Create an offchain claim for the grantee from the vault, note its "proof" output, via this command `npx hardhat --network custom create-claim --addr $VAULT --dest $GRANTEE --token $TOKEN --nonce 100 --block 1 --amount 10`
+6. Save the offchain proof somewhere, we did:
+   ```sh
+   export PROOF=0xed3229c291f4f827705480cf298141914b9ba93940a47d79e0ff4659bd28253202310ff9bea0e3a4e07c9d794fefccfd31409abee3ee88ad9d97fc32a3133e8f1c
+   ```
+7. You can now claim the funds! Just use `npx hardhat --network custom use-claim --proof $PROOF --from $VAULT --to $GRANTEE --amount 10 --block 1 --token $TOKEN --nonce 100`
+8. You can also check the balance of the grantee to confirm it got the tokens:
+   ```sh
+   npx hardhat --network custom balance --addr $GRANTEE --token $TOKEN
+   0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc has a balance of 10
+   ```
+
+> For convience purposes we map any amount you give to the scripts to their actual, decimal less, extended variant in Ethereum / Solidity slang. If you give the scripts a decimal number it will produce an error.
