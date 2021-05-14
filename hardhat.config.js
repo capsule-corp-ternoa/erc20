@@ -97,6 +97,7 @@ task("claims", "Create offchain claims for some tokens as defined in a JSON file
           to: addr,
           amount: convertedAmount.toString(),
           validity: atBlock,
+          epoch: vesting.epoch,
           nonce: nonce
         });
 
