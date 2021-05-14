@@ -137,7 +137,7 @@ task("create-claim", "Create an offchain claim for the given set of parameters")
       return signed;
     }
 
-    const amount = ethers.BigNumber.from(parseFloat(taskArgs.amount));
+    const amount = ethers.BigNumber.from(taskArgs.amount);
     const ten = ethers.BigNumber.from("10");
     const convertedAmount = amount.mul(ten.pow(decimals));
 
@@ -169,7 +169,7 @@ task("use-claim", "use a proof and its parameters to attempt to claim some token
     const CapsuleCoin = await ethers.getContractAt("CapsuleCoin", taskArgs.token);
     const decimals = await CapsuleCoin.decimals();
 
-    const amount = ethers.BigNumber.from(parseFloat(taskArgs.amount));
+    const amount = ethers.BigNumber.from(taskArgs.amount);
     const ten = ethers.BigNumber.from("10");
     const convertedAmount = amount.mul(ten.pow(decimals));
 
