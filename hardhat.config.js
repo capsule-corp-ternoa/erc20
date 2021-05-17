@@ -90,7 +90,7 @@ task("claims", "Create offchain claims for some tokens as defined in a JSON file
         const ten = ethers.BigNumber.from("10");
         const convertedAmount = amount.mul(ten.pow(decimals));
 
-        const proof = await createClaim(addr, amount, atBlock, convertedAmount);
+        const proof = await createClaim(addr, convertedAmount.toString(), atBlock, nonce);
         generatedClaims[addr].push({
           proof: proof,
           from: signer.address,
