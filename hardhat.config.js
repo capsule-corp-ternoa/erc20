@@ -62,20 +62,16 @@ task("claims", "Create offchain claims for some tokens as defined in a JSON file
       const entry = claims[addr];
       generatedClaims[addr] = [];
 
-      const vestings = [
-        {
-          epoch: entry.vesting1Epoch,
-          tokens: entry.vesting1price,
-        },
-        {
-          epoch: entry.vesting2Epoch,
-          tokens: entry.vesting2price,
-        },
-        {
-          epoch: entry.vesting3Epoch,
-          tokens: entry.vesting3price,
+      //check for upto 20 vestings
+      let vestings = [];
+      for (let i = 1; i <= 20; i++) {
+        if (entry[`vesting${i}Epoch`] && entry[`vesting${i}price`]) {
+          vestings.push({
+            epoch: entry[`vesting${i}Epoch`],
+            tokens: entry[`vesting${i}price`]
+          })
         }
-      ];
+      }
 
       for (const id in vestings) {
         const vesting = vestings[id];
