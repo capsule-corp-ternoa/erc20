@@ -1,6 +1,25 @@
 const { expect } = require("chai");
 const { BigNumber } = require("ethers");
 
+let expectError = async (promise, expectedError) => {
+    try {
+        await promise;
+    } catch (error) {
+        if (error.message.indexOf(expectedError) === -1) {
+            // When the exception was a revert, the resulting string will include only
+            // the revert reason, otherwise it will be the type of exception (e.g. 'invalid opcode')
+            const actualError = error.message.replace(
+                /Returned error: VM Exception while processing transaction: (revert )?/,
+                '',
+            );
+            expect(actualError).to.equal(expectedError, "Wrong kind of exception received");
+        }
+        return;
+    }
+
+    expect.fail("Expected an error that did not occur");
+};
+
 describe("Capsule Coin contract", () => {
     let owner;
     let user;
@@ -10,7 +29,11 @@ describe("Capsule Coin contract", () => {
         const CapsuleCoin = await ethers.getContractFactory("CapsuleCoin");
         [owner, user] = await ethers.getSigners();
 
-        token = await CapsuleCoin.deploy(owner.address);
+        const supply = BigNumber.from("2500000000");
+        const ten = BigNumber.from("10");
+        const decimals = BigNumber.from("18");
+        const supplyWithDecimals = supply.mul(ten.pow(decimals));
+        token = await CapsuleCoin.deploy(owner.address, supplyWithDecimals);
     })
 
     context("Deployment", () => {
@@ -19,12 +42,20 @@ describe("Capsule Coin contract", () => {
             expect(await token.totalSupply()).to.equal(ownerBalance);
         });
 
-        it("Has a total supply of 25B tokens", async () => {
+        it("Has a total supply of 2.5B tokens", async () => {
             const expected = BigNumber.from("2500000000");
             const decimals = await token.decimals();
             const ten = BigNumber.from(10);
 
             expect(await token.totalSupply()).to.equal(expected.mul(ten.pow(decimals)));
+        })
+
+        it("Has a cap of 2.5B tokens", async () => {
+            const expected = BigNumber.from("2500000000");
+            const decimals = await token.decimals();
+            const ten = BigNumber.from(10);
+
+            expect(await token.cap()).to.equal(expected.mul(ten.pow(decimals)));
         })
     })
 
@@ -65,25 +96,6 @@ describe("Capsule Coin contract", () => {
         })
 
         context("Invalid", () => {
-            let expectError = async (promise, expectedError) => {
-                try {
-                    await promise;
-                } catch (error) {
-                    if (error.message.indexOf(expectedError) === -1) {
-                        // When the exception was a revert, the resulting string will include only
-                        // the revert reason, otherwise it will be the type of exception (e.g. 'invalid opcode')
-                        const actualError = error.message.replace(
-                            /Returned error: VM Exception while processing transaction: (revert )?/,
-                            '',
-                        );
-                        expect(actualError).to.equal(expectedError, "Wrong kind of exception received");
-                    }
-                    return;
-                }
-
-                expect.fail("Expected an error that did not occur");
-            }
-
             it("Fails if not enough coins in balance", async () => {
                 const totalSupply = await token.totalSupply();
                 await token.connect(owner).transfer(user.address, totalSupply); // Zero balance
@@ -183,4 +195,39 @@ describe("Capsule Coin contract", () => {
             })
         })
     })
+
+    context("Minting", () => {
+        // For these precise tests we do not want any supply to be available yet
+        beforeEach(async () => {
+            const CapsuleCoin = await ethers.getContractFactory("CapsuleCoin");
+            [owner, user] = await ethers.getSigners();
+
+            token = await CapsuleCoin.deploy(owner.address, 0);
+        });
+
+        it("Owner set accordingly", async () => {
+            const contract_owner = await token.owner();
+            expect(contract_owner).to.equal(owner.address);
+        });
+
+        it("Owner can mint", async () => {
+            await token.mint(user.address, 100);
+            expect(await token.balanceOf(user.address)).to.equal(100);
+        });
+
+        it("Non owner cannot mint", async () => {
+            await expectError(
+                token.connect(user).mint(user.address, 100),
+                "Ownable: caller is not the owner"
+            );
+        });
+
+        it("Cannot mint more than supply", async () => {
+            await token.mint(user.address, 1);
+            await expectError(
+                token.mint(user.address, await token.cap()),
+                "ERC20Capped: cap exceeded"
+            );
+        });
+    });
 });
