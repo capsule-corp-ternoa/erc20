@@ -3,6 +3,8 @@ pragma solidity 0.7.6;
 
 import "@openzeppelin/contracts/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20Capped.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 /*
  * Capsule Coin is the ERC20 token for the Ternoa platform. It is received and
@@ -26,14 +28,18 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
  * - a nonce used to avoid replay attacks, if the nonce was already seen for the same source
  *   account the proof should be discarded.
  */
-contract CapsuleCoin is ERC20 {
+contract CapsuleCoin is ERC20Capped, Ownable {
     using ECDSA for bytes32;
 
     mapping(address => mapping(uint256 => bool)) public nonceUsed;
 
-    constructor(address vault) ERC20("Capsule Coin", "CAPS") {
+    constructor(address vault, uint256 supply)
+        ERC20("Capsule Coin", "CAPS")
+        ERC20Capped(2500000000 * (10**18))
+        Ownable()
+    {
         // We create 2.5B coins but the token has 18 decimals.
-        _mint(vault, 2500000000 * (10**18));
+        _mint(vault, supply);
     }
 
     /*
@@ -86,5 +92,14 @@ contract CapsuleCoin is ERC20 {
 
         nonceUsed[from][nonce] = true;
         _transfer(from, to, amount);
+    }
+
+    /*
+     * @description Create new coins up to the token's cap
+     * @param to Account receiving the coins
+     * @param amount Amount of coins to mint
+     */
+    function mint(address to, uint256 amount) external onlyOwner {
+        _mint(to, amount);
     }
 }

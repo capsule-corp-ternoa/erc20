@@ -8,11 +8,12 @@ require("@nomiclabs/hardhat-waffle");
 
 task("deploy", "Deploy the token to the specified network")
   .addParam("vault", "account that will be allocated the total token supply")
+  .addParam("supply", "set the supply with which the token is deployed, new coins can be minted later")
   .setAction(async taskArgs => {
     const CapsuleCoin = await ethers.getContractFactory("CapsuleCoin");
 
-    console.log(`🚀 Deploying token with vault ${taskArgs.vault}`);
-    const deployed = await CapsuleCoin.deploy(taskArgs.vault);
+    console.log(`🚀 Deploying token with vault ${taskArgs.vault} and supply ${taskArgs.supply}`);
+    const deployed = await CapsuleCoin.deploy(taskArgs.vault, taskArgs.supply);
     console.log(`🎁 Token deployed to ${deployed.address}`);
   });
 
